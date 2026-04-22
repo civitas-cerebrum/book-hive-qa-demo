@@ -1,0 +1,28 @@
+{
+  "name": "book-hive-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end test suite for BookHive — runs against the public Docker Hub images (umutayb/book-hive-frontend + umutayb/book-hive-backend).",
+  "scripts": {
+    "app:up": "docker compose up -d && node scripts/wait-for-app.js",
+    "app:down": "docker compose down",
+    "app:logs": "docker compose logs -f",
+    "seed": "curl -s -X POST http://localhost:8080/api/reset",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:bugs": "playwright test --config=playwright.bug-discovery.config.ts",
+    "report": "playwright show-report",
+    "postinstall": "playwright install chromium --with-deps || true"
+  },
+  "devDependencies": {
+    "@civitas-cerebrum/element-interactions": "^0.2.8",
+    "@civitas-cerebrum/element-repository": "^0.1.8",
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

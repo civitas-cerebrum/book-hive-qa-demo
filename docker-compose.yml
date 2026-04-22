@@ -1,0 +1,30 @@
+# Pulls the published BookHive frontend + backend images from Docker Hub.
+# No local build — the test suite runs against the exact artefacts published
+# by the BookHive project.
+services:
+  frontend:
+    image: umutayb/book-hive-frontend:latest
+    ports:
+      - "7547:80"
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    image: umutayb/book-hive-backend:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongodb:
+        condition: service_started
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/bookhive
+      JWT_SECRET: change-me-in-production-use-a-strong-random-secret-at-least-64-bytes
+
+  mongodb:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

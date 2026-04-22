@@ -1,0 +1,14 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+.playwright-mcp/
+.DS_Store
+*.log
+.env
+.env.*
+.idea/
+.vscode/
+.claude/
+CLAUDE.md
+mongo-data/
