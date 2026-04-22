@@ -1,0 +1,88 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main-suite:
+    name: Main suite (44 tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pull BookHive images and start the stack
+        run: npm run app:up
+
+      - name: Run Playwright (main suite)
+        run: npm test
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-main
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: npm run app:logs | tail -n 200
+
+      - name: Stop the stack
+        if: always()
+        run: npm run app:down
+
+  bug-discovery:
+    name: Bug discovery (expected failures)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # These specs reproduce known bugs in the upstream image —
+    # they are expected to fail. continue-on-error keeps the
+    # workflow green so the main suite's result stays the signal.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pull BookHive images and start the stack
+        run: npm run app:up
+
+      - name: Run Playwright (bug-discovery suite)
+        run: npm run test:bugs
+        continue-on-error: true
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-bug-discovery
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Stop the stack
+        if: always()
+        run: npm run app:down
